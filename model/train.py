@@ -19,9 +19,9 @@ class SimpleCNN(nn.Module):
         
         # Fully connected layers
         # Input: Flattened output from conv2 (10 * 5 * 5 = 250 features)
-        self.fc1 = nn.Linear(10 * 5 * 5, 32)  # 250 -> 32
+        self.fc1 = nn.Linear(10 * 5 * 5, 16)  # 250 -> 32
         # Output: 10 classes for digits 0-9
-        self.fc2 = nn.Linear(32, 10)  # 32 -> 10
+        self.fc2 = nn.Linear(16, 10)  # 32 -> 10
         
     def forward(self, x):
         # First conv block: 28x28 -> 26x26 -> 13x13
