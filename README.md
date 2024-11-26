@@ -1,5 +1,7 @@
 # MNIST CNN Classifier
 
+[![ML Pipeline](https://github.com/nragrawal/ERAS5/actions/workflows/ml-pipeline.yml/badge.svg)](https://github.com/nragrawal/ERAS5/actions/workflows/ml-pipeline.yml)
+
 A simple CNN-based classifier for the MNIST dataset with automated testing and CI/CD pipeline.
 
 ## Project Overview
