@@ -8,26 +8,32 @@ import os
 class SimpleCNN(nn.Module):
     def __init__(self):
         super(SimpleCNN, self).__init__()
-        # First conv: 28x28 -> 26x26 (no padding)
+        # First conv: Input(1, 28, 28) -> Conv(10, 26, 26) -> Pool(10, 13, 13)
         self.conv1 = nn.Conv2d(1, 10, kernel_size=3)
-        # Pool: 26x26 -> 13x13
         
-        # Second conv: 13x13 -> 11x11 (no padding)
+        # Second conv: Input(10, 13, 13) -> Conv(10, 11, 11) -> Pool(10, 5, 5)
         self.conv2 = nn.Conv2d(10, 10, kernel_size=3)
-        # Pool: 11x11 -> 5x5
+        
+        # Pooling layer used after each conv
         self.pool = nn.MaxPool2d(2, 2)
-        # self.dropout = nn.Dropout(0.2)
         
         # Fully connected layers
-        # Input: 10 channels * 5 * 5 = 250 features
-        self.fc1 = nn.Linear(10 * 5 * 5, 32)
-        # Output: 10 classes (digits 0-9)
-        self.fc2 = nn.Linear(32, 10)
+        # Input: Flattened output from conv2 (10 * 5 * 5 = 250 features)
+        self.fc1 = nn.Linear(10 * 5 * 5, 32)  # 250 -> 32
+        # Output: 10 classes for digits 0-9
+        self.fc2 = nn.Linear(32, 10)  # 32 -> 10
         
     def forward(self, x):
-        x = self.pool(torch.relu(self.conv1(x)))  # 28x28 -> 13x13
-        x = self.pool(torch.relu(self.conv2(x)))  # 13x13 -> 5x5
-        x = x.view(-1, 10 * 5 * 5)  # Flatten: 10 channels * 5 * 5 = 250
+        # First conv block: 28x28 -> 26x26 -> 13x13
+        x = self.pool(torch.relu(self.conv1(x)))
+        
+        # Second conv block: 13x13 -> 11x11 -> 5x5
+        x = self.pool(torch.relu(self.conv2(x)))
+        
+        # Flatten: 10 channels * 5 * 5 pixels = 250 features
+        x = x.view(-1, 10 * 5 * 5)
+        
+        # Fully connected layers with ReLU activation
         x = torch.relu(self.fc1(x))
         x = self.fc2(x)
         return x
