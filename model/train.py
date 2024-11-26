@@ -4,7 +4,6 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from datetime import datetime
 import os
-import matplotlib.pyplot as plt
 import numpy as np
 
 class SimpleCNN(nn.Module):
@@ -41,31 +40,32 @@ class SimpleCNN(nn.Module):
         return x
 
 def show_augmented_images(originals, augmenteds, title="Augmentation Examples"):
-    """Display 3 pairs of original and augmented images in a 2x3 grid"""
-    fig, axes = plt.subplots(2, 3, figsize=(12, 8))
+    """Display images as ASCII art in console"""
+    print(f"\n{title}")
+    print("-" * 80)
     
     for idx in range(3):
-        # Convert tensors to numpy arrays and reshape
+        # Convert tensors to numpy arrays and normalize to 0-1
         orig_img = originals[idx].squeeze().numpy()
         aug_img = augmenteds[idx].squeeze().numpy()
         
-        # Original image on top row
-        axes[0, idx].imshow(orig_img, cmap='gray')
-        axes[0, idx].set_title(f'Original {idx+1}')
-        axes[0, idx].axis('off')
+        # Resize to smaller dimensions for ASCII art
+        small_orig = (orig_img[::2, ::2] > 0.5).astype(int)
+        small_aug = (aug_img[::2, ::2] > 0.5).astype(int)
         
-        # Augmented image on bottom row
-        axes[1, idx].imshow(aug_img, cmap='gray')
-        axes[1, idx].set_title(f'Augmented {idx+1}')
-        axes[1, idx].axis('off')
-    
-    plt.suptitle(title)
-    plt.tight_layout()
-    
-    # Show plot and close after 5 seconds
-    plt.show(block=False)
-    plt.pause(5)
-    plt.close()
+        # Convert to ASCII
+        ascii_chars = [' ', '░', '▒', '▓', '█']
+        
+        print(f"\nPair {idx + 1}:")
+        print("Original:")
+        for row in small_orig:
+            print(''.join(ascii_chars[int(val * 4)] for val in row))
+        
+        print("\nAugmented:")
+        for row in small_aug:
+            print(''.join(ascii_chars[int(val * 4)] for val in row))
+        
+        print("-" * 80)
 
 def train():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -106,7 +106,7 @@ def train():
         augmented_image = basic_transform(aug_transform(pil_image))
         augmented_images.append(augmented_image)
     
-    # Show all images at once
+    # Show all images in console
     show_augmented_images(original_images, augmented_images, "3 Augmentation Examples")
     
     # Initialize model, loss function, and optimizer
