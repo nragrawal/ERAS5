@@ -11,12 +11,12 @@ This project implements a Convolutional Neural Network (CNN) to classify handwri
 The CNN architecture consists of:
 - 2 convolutional layers with ReLU activation (10 channels each)
 - Max pooling layers after each convolution
-- 2 fully connected layers (16 units, 10 outputs)
-- Total parameters: 5,196
+- 2 fully connected layers (32 units, 10 outputs)
+- Total parameters: 9,372
   - Conv1: 100 parameters (3×3×1×10 + 10)
   - Conv2: 910 parameters (3×3×10×10 + 10)
-  - FC1: 4,016 parameters (250×16 + 16)
-  - FC2: 170 parameters (16×10 + 10)
+  - FC1: 8,032 parameters (250×32 + 32)
+  - FC2: 330 parameters (32×10 + 10)
 
 ## Requirements
 
