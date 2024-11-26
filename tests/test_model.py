@@ -6,6 +6,7 @@ import torch
 import pytest
 from model.train import SimpleCNN, train, show_augmented_images
 from torchvision import transforms
+from model.augmentation_utils import get_transforms, show_augmented_images
 
 def test_model_architecture():
     model = SimpleCNN()
