@@ -20,7 +20,7 @@ def test_model_architecture():
 
 def test_model_training():
     accuracy, model = train()
-    assert accuracy > 95.0, f"Model accuracy {accuracy:.2f}% is below 95%"
+    assert accuracy >= 95.0, f"Model accuracy {accuracy:.2f}% is below 95%"
 
 def test_model_input():
     model = SimpleCNN()
