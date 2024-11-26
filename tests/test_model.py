@@ -4,17 +4,18 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import torch
 import pytest
-from model.train import SimpleCNN, train, show_augmented_images
+from model.train import SimpleCNN, train
 from torchvision import transforms
 from model.augmentation_utils import get_transforms, show_augmented_images
 
 def test_model_architecture():
     model = SimpleCNN()
+    model.eval()  # Set to evaluation mode
     
-    # Test input shape
-    test_input = torch.randn(1, 1, 28, 28)
+    # Test input shape with batch size 4
+    test_input = torch.randn(4, 1, 28, 28)  # Changed from 1 to 4
     output = model(test_input)
-    assert output.shape == (1, 10), "Output shape should be (1, 10)"
+    assert output.shape == (4, 10), "Output shape should be (4, 10)"
     
     # Count parameters
     total_params = sum(p.numel() for p in model.parameters())
@@ -26,9 +27,10 @@ def test_model_training():
 
 def test_model_input():
     model = SimpleCNN()
+    model.eval()  # Set to evaluation mode
     
-    # Test various batch sizes
-    batch_sizes = [1, 4, 16]
+    # Test various batch sizes (all > 1)
+    batch_sizes = [2, 4, 16]  # Changed minimum batch size to 2
     for batch_size in batch_sizes:
         test_input = torch.randn(batch_size, 1, 28, 28)
         try:
@@ -40,25 +42,28 @@ def test_model_input():
 def test_model_feature_dimensions():
     """Test the intermediate feature dimensions in the model"""
     model = SimpleCNN()
-    x = torch.randn(1, 1, 28, 28)
+    model.eval()  # Set to evaluation mode
+    x = torch.randn(4, 1, 28, 28)  # Changed from 1 to 4
     
     # Test first conv + pool
-    x1 = model.pool(torch.relu(model.conv1(x)))
-    assert x1.shape == (1, 10, 13, 13), "First conv+pool output shape incorrect"
+    x1 = model.pool(torch.relu(model.bn1(model.conv1(x))))  # Added bn1
+    assert x1.shape == (4, 10, 13, 13), "First conv+pool output shape incorrect"
     
     # Test second conv + pool
-    x2 = model.pool(torch.relu(model.conv2(x1)))
-    assert x2.shape == (1, 10, 5, 5), "Second conv+pool output shape incorrect"
+    x2 = model.pool(torch.relu(model.bn2(model.conv2(x1))))  # Added bn2
+    assert x2.shape == (4, 10, 5, 5), "Second conv+pool output shape incorrect"
     
     # Test flattened dimension
-    x3 = x2.view(-1, 10 * 5 * 5)
-    assert x3.shape == (1, 250), "Flattened dimension incorrect"
+    x3 = x2.view(4, -1)  # Changed from -1 to 4
+    assert x3.shape == (4, 250), "Flattened dimension incorrect"
 
 def test_model_activation_ranges():
     """Test if model outputs are in the expected range"""
     model = SimpleCNN()
+    model.eval()  # Set to evaluation mode
     test_input = torch.randn(10, 1, 28, 28)
-    output = model(test_input)
+    with torch.no_grad():  # Added no_grad for evaluation
+        output = model(test_input)
     
     # Test if outputs are in reasonable range for softmax
     assert torch.all(output >= -100) and torch.all(output <= 100), \

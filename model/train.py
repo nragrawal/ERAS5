@@ -9,24 +9,42 @@ from model.augmentation_utils import get_transforms, show_augmented_images, get_
 class SimpleCNN(nn.Module):
     def __init__(self):
         super(SimpleCNN, self).__init__()
-        # First conv: Input(1, 28, 28) -> Conv(10, 26, 26) -> Pool(10, 13, 13)
+        # First conv block
         self.conv1 = nn.Conv2d(1, 10, kernel_size=3)
+        self.bn1 = nn.BatchNorm2d(10)
         
-        # Second conv: Input(10, 13, 13) -> Conv(10, 11, 11) -> Pool(10, 5, 5)
+        # Second conv block
         self.conv2 = nn.Conv2d(10, 10, kernel_size=3)
+        self.bn2 = nn.BatchNorm2d(10)
         
-        # Pooling layer used after each conv
         self.pool = nn.MaxPool2d(2, 2)
         
         # Fully connected layers
         self.fc1 = nn.Linear(10 * 5 * 5, 64)
+        self.bn3 = nn.BatchNorm1d(64)
         self.fc2 = nn.Linear(64, 10)
         
+        # Initialize weights
+        self._initialize_weights()
+        
+    def _initialize_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.01)
+                nn.init.constant_(m.bias, 0)
+        
     def forward(self, x):
-        x = self.pool(torch.relu(self.conv1(x)))
-        x = self.pool(torch.relu(self.conv2(x)))
+        x = self.pool(torch.relu(self.bn1(self.conv1(x))))
+        x = self.pool(torch.relu(self.bn2(self.conv2(x))))
         x = x.view(-1, 10 * 5 * 5)
-        x = torch.relu(self.fc1(x))
+        x = torch.relu(self.bn3(self.fc1(x)))
         x = self.fc2(x)
         return x
 
