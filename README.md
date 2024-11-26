@@ -4,7 +4,7 @@ A simple CNN-based classifier for the MNIST dataset with automated testing and C
 
 ## Project Overview
 
-This project implements a Convolutional Neural Network (CNN) to classify handwritten digits from the MNIST dataset. The model is designed to be lightweight (<25,000 parameters) while achieving >94% accuracy in a single epoch of training.
+This project implements a Convolutional Neural Network (CNN) to classify handwritten digits from the MNIST dataset. The model is designed to be lightweight (<25,000 parameters) while achieving >95% accuracy in a single epoch of training.
 
 ## Model Architecture
 
