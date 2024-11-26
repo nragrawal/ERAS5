@@ -4,6 +4,8 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from datetime import datetime
 import os
+import matplotlib.pyplot as plt
+import numpy as np
 
 class SimpleCNN(nn.Module):
     def __init__(self):
@@ -19,9 +21,9 @@ class SimpleCNN(nn.Module):
         
         # Fully connected layers
         # Input: Flattened output from conv2 (10 * 5 * 5 = 250 features)
-        self.fc1 = nn.Linear(10 * 5 * 5, 32)  # 250 -> 32
+        self.fc1 = nn.Linear(10 * 5 * 5, 64)  # 250 -> 32
         # Output: 10 classes for digits 0-9
-        self.fc2 = nn.Linear(32, 10)  # 32 -> 10
+        self.fc2 = nn.Linear(64, 10)  # 32 -> 10
         
     def forward(self, x):
         # First conv block: 28x28 -> 26x26 -> 13x13
@@ -38,18 +40,74 @@ class SimpleCNN(nn.Module):
         x = self.fc2(x)
         return x
 
+def show_augmented_images(originals, augmenteds, title="Augmentation Examples"):
+    """Display 3 pairs of original and augmented images in a 2x3 grid"""
+    fig, axes = plt.subplots(2, 3, figsize=(12, 8))
+    
+    for idx in range(3):
+        # Convert tensors to numpy arrays and reshape
+        orig_img = originals[idx].squeeze().numpy()
+        aug_img = augmenteds[idx].squeeze().numpy()
+        
+        # Original image on top row
+        axes[0, idx].imshow(orig_img, cmap='gray')
+        axes[0, idx].set_title(f'Original {idx+1}')
+        axes[0, idx].axis('off')
+        
+        # Augmented image on bottom row
+        axes[1, idx].imshow(aug_img, cmap='gray')
+        axes[1, idx].set_title(f'Augmented {idx+1}')
+        axes[1, idx].axis('off')
+    
+    plt.suptitle(title)
+    plt.tight_layout()
+    
+    # Show plot and close after 5 seconds
+    plt.show(block=False)
+    plt.pause(5)
+    plt.close()
+
 def train():
-    # Set device (GPU if available, else CPU)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    # Load MNIST dataset with normalization
-    transform = transforms.Compose([
+    # Define augmentation transforms
+    train_transform = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,))  # MNIST mean and std
+        transforms.RandomRotation(10),
+        transforms.Normalize((0.1307,), (0.3081,))
     ])
     
-    train_dataset = datasets.MNIST('data', train=True, download=True, transform=transform)
+    # Basic transform for visualization
+    basic_transform = transforms.ToTensor()
+    
+    # Load dataset
+    train_dataset = datasets.MNIST('data', train=True, download=True, transform=train_transform)
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=16, shuffle=True)
+    
+    # Show augmentation examples
+    test_dataset = datasets.MNIST('data', train=True, download=True, transform=basic_transform)
+    
+    # Prepare lists for original and augmented images
+    original_images = []
+    augmented_images = []
+    
+    # Get 3 sample images
+    for i in range(3):
+        original_image = test_dataset[i][0]
+        original_images.append(original_image)
+        
+        # Apply augmentation
+        aug_transform = transforms.Compose([
+            transforms.RandomRotation(10),
+        ])
+        
+        # Convert to PIL image for transforms
+        pil_image = transforms.ToPILImage()(original_image)
+        augmented_image = basic_transform(aug_transform(pil_image))
+        augmented_images.append(augmented_image)
+    
+    # Show all images at once
+    show_augmented_images(original_images, augmented_images, "3 Augmentation Examples")
     
     # Initialize model, loss function, and optimizer
     model = SimpleCNN().to(device)
